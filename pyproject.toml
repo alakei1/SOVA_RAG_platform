@@ -3,7 +3,8 @@ name = "sova-rag-platform"
 version = "0.0.1"
 description = "Корневой контейнер для единого виртуального пространства"
 requires-python = "==3.14.4"
-[tool.uv.dev-dependencies]
+
+[dependency-groups]
 dev = [
     "pytest>=8.3.0",
     "pytest-asyncio>=0.24.0",
@@ -27,7 +28,7 @@ package = false
 [tool.uv.workspace]
 members = [
     "gateway",
-    "download_worker",
+    "downloadworker",
     "processing_worker",
     "search_service",
     "llm_service",
