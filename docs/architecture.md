@@ -15,107 +15,121 @@ SOVA_RAG_platform/
 │   ├── api.md
 │   └── deployment.md
 │
-├── gateway/                           # API Gateway (Точка входа)
+├── gateway/                            # API Gateway
 │   ├── Dockerfile
-│   ├── requirements.txt
+│   ├── pyproject.toml                  # ✅ Вместо requirements.txt
 │   ├── .env.example
-│   ├── src/
-│   │   ├── init.py
-│   │   ├── main.py                    # FastAPI приложение (+ OpenTelemetry Middleware)
+│   ├── gateway/                        # 🆕 Пакет с именем сервиса
+│   │   ├── __init__.py                 # ✅ init.py → __init__.py
+│   │   ├── main.py                     # FastAPI приложение
 │   │   ├── routes/
-│   │   │   ├── init.py
-│   │   │   ├── upload.py              # POST /api/v1/upload (Загрузка файла и публикация в RabbitMQ)
-│   │   │   ├── chat.py                # POST /api/v1/chat (Диалог с RAG-агентом через llm-service)
-│   │   │   ├── search.py              # POST /api/v1/search (Чистый векторный поиск)
-│   │   │   ├── delete.py              # DELETE /api/v1/delete/{document_id} (Удаление документов/чанкинга)
-│   │   │   └── status.py              # GET /api/v1/status/{task_id} (Статус фоновых задач)
+│   │   │   ├── __init__.py
+│   │   │   ├── upload.py
+│   │   │   ├── chat.py
+│   │   │   ├── search.py
+│   │   │   ├── delete.py
+│   │   │   └── status.py
 │   │   ├── middleware/
-│   │   │   ├── init.py
-│   │   │   ├── auth.py                # Аутентификация
-│   │   │   ├── rate_limit.py          # Rate limiting (Redis-backed)
-│   │   │   ├── tracing.py             # Сквозной сбор трассировок (X-Request-ID)
-│   │   │   └── logging.py             # Структурированное логирование
-│   │   ├── models/
-│   │   │   ├── requests.py            # Pydantic модели запросов (включая chat, upload, delete)
-│   │   │   └── responses.py           # Pydantic модели ответов
-│   │   └── services/
-│   │       ├── queue.py               # RabbitMQ клиент (Quorum queues)
-│   │       ├── grpc_client.py         # gRPC клиент к search-service
-│   │       └── llm_client.py          # Клиент шлюза к llm-service (для эндпоинта chat)
+│   │   │   ├── __init__.py
+│   │   │   ├── auth.py
+│   │   │   ├── rate_limit.py
+│   │   │   ├── tracing.py
+│   │   │   └── logging.py
+│   │   ├── services/
+│   │   │   ├── __init__.py
+│   │   │   ├── queue.py                # RabbitMQ клиент
+│   │   │   ├── grpc_client.py          # gRPC клиент к search-service
+│   │   │   └── llm_client.py           # HTTP клиент к llm-service
+│   │   └── dependencies/
+│   │       ├── __init__.py
+│   │       └── auth.py                 # Dependency injection для auth
 │   └── tests/
+│       ├── __init__.py
 │       ├── test_routes.py
 │       └── test_middleware.py
 │
-├── download-worker/                   # Download Worker (Скачивание файлов)
+├── download-worker/                    # Download Worker
 │   ├── Dockerfile
-│   ├── requirements.txt
+│   ├── pyproject.toml
 │   ├── .env.example
-│   ├── src/
-│   │   ├── init.py
-│   │   ├── main.py                    # Точка входа воркера
-│   │   ├── worker.py                  # Основной цикл с ручным ack/nack и DLX
+│   ├── download_worker/                # 🆕 Пакет с именем сервиса
+│   │   ├── __init__.py
+│   │   ├── main.py
+│   │   ├── worker.py
 │   │   ├── downloaders/
-│   │   │   ├── s3_downloader.py       # Скачивание из внешних источников
-│   │   │   └── http_downloader.py     # Скачивание по HTTP (с retry)
+│   │   │   ├── __init__.py
+│   │   │   ├── s3_downloader.py
+│   │   │   └── http_downloader.py
 │   │   ├── storage/
-│   │   │   └── s3_uploader.py         # Загрузка файла в промежуточный S3/MinIO
+│   │   │   ├── __init__.py
+│   │   │   └── s3_uploader.py
 │   │   └── queue/
-│   │       └── client.py              # RabbitMQ клиент
+│   │       ├── __init__.py
+│   │       └── client.py
 │   └── tests/
+│       ├── __init__.py
 │       └── test_downloader.py
 │
-├── processing-worker/                 # Processing Worker (Парсинг, чанкинг, эмбеддинги, удаление)
+├── processing-worker/                  # Processing Worker
 │   ├── Dockerfile
-│   ├── requirements.txt
+│   ├── pyproject.toml
 │   ├── .env.example
-│   ├── src/
-│   │   ├── init.py
-│   │   ├── main.py                    # Точка входа воркера
-│   │   ├── worker.py                  # Основной цикл (ручной ack/nack, поддержка задач удаления)
+│   ├── processing_worker/              # 🆕 Пакет с именем сервиса
+│   │   ├── __init__.py
+│   │   ├── main.py
+│   │   ├── worker.py
 │   │   ├── processors/
-│   │   │   ├── s3_fetcher.py          # Скачивание файла из промежуточного S3
-│   │   │   ├── text_extractor.py      # Извлечение текста (PDF / DOCX)
-│   │   │   ├── chunker.py             # Разбивка текста на чанки
-│   │   │   ├── embedder.py            # Генерация векторов
-│   │   │   └── vector_store.py        # Идемпотентная запись и удаление точек из Qdrant
+│   │   │   ├── __init__.py
+│   │   │   ├── s3_fetcher.py
+│   │   │   ├── text_extractor.py
+│   │   │   ├── chunker.py
+│   │   │   ├── embedder.py
+│   │   │   └── vector_store.py
 │   │   └── queue/
-│   │       └── client.py              # RabbitMQ клиент
+│   │       ├── __init__.py
+│   │       └── client.py
 │   └── tests/
+│       ├── __init__.py
 │       └── test_processors.py
 │
-├── search-service/                    # Search Service (gRPC, чистый векторный поиск)
+├── search-service/                     # Search Service
 │   ├── Dockerfile
-│   ├── requirements.txt
+│   ├── pyproject.toml
 │   ├── .env.example
 │   ├── proto/
-│   │   └── search.proto               # gRPC протокол (включая методы поиска)
-│   ├── src/
-│   │   ├── init.py
-│   │   ├── main.py                    # gRPC сервер
-│   │   ├── server.py                  # Реализация эндпоинтов поиска
+│   │   └── search.proto
+│   ├── search_service/                 # 🆕 Пакет с именем сервиса
+│   │   ├── __init__.py
+│   │   ├── main.py
+│   │   ├── server.py
 │   │   ├── services/
-│   │   │   ├── embedding.py           # Эмбеддинг поискового запроса
-│   │   │   └── vector_search.py       # Запрос в Qdrant с лимитами латентности
+│   │   │   ├── __init__.py
+│   │   │   ├── embedding.py
+│   │   │   └── vector_search.py
 │   │   └── utils/
-│   │       └── cache.py               # Кэширование результатов поиска (Redis)
+│   │       ├── __init__.py
+│   │       └── cache.py
 │   └── tests/
+│       ├── __init__.py
 │       └── test_search.py
 │
-├── llm-service/                       # LLM Service (Генерация ответов, RAG-оркестрация)
-│   ├── Dockerfile
-│   ├── requirements.txt
-│   ├── .env.example
-│   ├── src/
-│   │   ├── init.py
-│   │   ├── main.py                    # FastAPI / gRPC сервер (обслуживает /chat запросы от Gateway)
-│   │   ├── llm_client.py              # Клиент к DeepSeek API
-│   │   ├── prompt_templates.py        # Шаблоны системных промптов
-│   │   ├── context_builder.py         # Сборка контекста из Qdrant/Search Service
-│   │   └── utils/
-│   │       ├── cache.py               # Кэш ответов LLM (Redis)
-│   │       └── circuit_breaker.py     # Защита от сбоев внешнего LLM-провайдера
-│   └── tests/
-│       └── test_llm.py
+├─── llm-service/                        # LLM Service
+│    ├── Dockerfile
+│    ├── pyproject.toml
+│    ├── .env.example
+│    ├── llm_service/                    # 🆕 Пакет с именем сервиса
+│    │   ├── __init__.py
+│    │   ├── main.py
+│    │   ├── llm_client.py
+│    │   ├── prompt_templates.py
+│    │   ├── context_builder.py
+│    │   └── utils/
+│    │       ├── __init__.py
+│    │       ├── cache.py
+│    │       └── circuit_breaker.py
+│    └── tests/
+│        ├── __init__.py
+│        └── test_llm.py
 │
 ├── shared/                            # Общий код
 │   ├── init.py
