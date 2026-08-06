@@ -44,7 +44,7 @@ llm_service       = { workspace = true }
 
 [tool.ruff]
 line-length = 100
-target-version = "py314"
+target-version = "py313"
 exclude = [
     ".git",
     ".venv",
@@ -74,7 +74,7 @@ testpaths = ["SOVA_RAG_platform/*/tests"]
 addopts = "-ra -q --tb=short"
 
 [tool.mypy]
-python_version = "3.14.4"
+python_version = "3.12"
 
 warn_return_any = true
 warn_unused_configs = true
@@ -107,7 +107,6 @@ exclude = [
 
 plugins = [
     "pydantic.mypy",
-    "mypy.extensions",
 ]
 
 
