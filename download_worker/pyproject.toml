@@ -1,8 +1,14 @@
 [project]
 name = "download-worker"
 version = "0.0.1"
-requires-python = "3.14"
+requires-python = "==3.14.4"
 
 
-dependencies = [
-]
+dependencies = []
+
+[tool.uv.sources]
+shared = { workspace = true }
+
+[build-system]
+requires = ["uv>=0.5.0"]
+build-backend = "uv.build"
