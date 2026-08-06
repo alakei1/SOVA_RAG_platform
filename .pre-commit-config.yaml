@@ -16,20 +16,16 @@ repos:
         language: system
         types: [python]
 
-
   - repo: local
     hooks:
       - id: mypy
         name: mypy
-        entry: uv run mypy --all-packages
+        entry: uv run mypy .
         language: system
         types: [python]
         pass_filenames: false
 
-
-
-
-  # Проверка TOML файлов
+  # Стандартные проверки pre-commit
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
@@ -60,10 +56,3 @@ repos:
       - id: detect-secrets
         args: ['--baseline', '.secrets.baseline']
         exclude: ^tests/|^docs/
-
-  # Проверка размера файлов
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
-    hooks:
-      - id: check-added-large-files
-        args: ['--maxkb=500']
