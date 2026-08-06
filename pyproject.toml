@@ -1,0 +1,60 @@
+[project]
+name = "sova-rag-platform"
+version = "0.0.1"
+description = "Корневой контейнер для единого виртуального пространства"
+requires-python = ">=3.14"
+dependencies = []
+
+[build-system]
+requires = ["uv>=0.5.0"]
+build-backend = "uv.build"
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = [
+    "SOVA_RAG_platform/gateway",
+    "SOVA_RAG_platform/download_worker",
+    "SOVA_RAG_platform/processing_worker",
+    "SOVA_RAG_platform/search_service",
+    "SOVA_RAG_platform/llm_service",
+]
+
+[tool.uv.sources]
+gateway           = { workspace = true }
+download_worker   = { workspace = true }
+processing_worker = { workspace = true }
+search_service    = { workspace = true }
+llm_service       = { workspace = true }
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "*.egg-info",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = []
+
+[tool.ruff.lint.isort]
+known-first-party = [
+    "gateway",
+    "download_worker",
+    "processing_worker",
+    "search_service",
+    "llm_service",
+]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["SOVA_RAG_platform/*/tests"]
+addopts = "-ra -q --tb=short"
