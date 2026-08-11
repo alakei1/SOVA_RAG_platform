@@ -3,6 +3,9 @@ name = "sova-rag-platform"
 version = "0.0.1"
 description = "Корневой контейнер для единого виртуального пространства"
 requires-python = "==3.14.4"
+dependencies = [
+
+]
 
 [dependency-groups]
 dev = [
@@ -27,6 +30,7 @@ package = false
 
 [tool.uv.workspace]
 members = [
+    "shared",
     "gateway",
     "downloadworker",
     "processing_worker",
@@ -76,13 +80,20 @@ addopts = "-ra -q --tb=short"
 [tool.mypy]
 python_version = "3.12"
 
+
+mypy_path = "shared:gateway:download_worker:processing_worker:search_service:llm_service"
+explicit_package_bases = true
+namespace_packages = true
+
+
+packages = ["shared", "gateway", "download_worker", "processing_worker", "search_service", "llm_service"]
+
 warn_return_any = true
 warn_unused_configs = true
 warn_redundant_casts = true
 warn_unused_ignores = true
 warn_no_return = true
 warn_unreachable = true
-
 
 disallow_untyped_defs = true
 disallow_any_unimported = true
@@ -91,10 +102,8 @@ disallow_untyped_decorators = true
 disallow_any_generics = true
 disallow_incomplete_defs = true
 
-
 ignore_missing_imports = false
 strict_equality = true
-
 
 exclude = [
     "^tests/",
@@ -104,11 +113,14 @@ exclude = [
     "setup.py",
 ]
 
-
 plugins = [
     "pydantic.mypy",
 ]
 
+
+[[tool.mypy.overrides]]
+module = ["config", "settings"]
+ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "pydantic.*"

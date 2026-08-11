@@ -1,11 +1,13 @@
 [project]
 name = "gateway"
 version = "0.0.1"
+description = "API Gateway for SOVA RAG Platform"
 requires-python = "==3.14.4"
 
 
 dependencies = [
     "fastapi>=0.141.1",
+    "shared",
 ]
 
 [tool.uv.sources]
