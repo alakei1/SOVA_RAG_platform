@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 from pathlib import Path
-from typing import Literal, Type, TypeVar, cast
+from typing import Any, Callable, Literal, Type, TypeVar
 
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -57,11 +57,42 @@ class BaseConfig(BaseSettings):
     qdrant_vector_size: int = 768
     qdrant_vector_distance: str = "Cosine"
 
-    # --- НАСТРОЙКИ RABBITMQ (Брокер очередей для воркеров) ---
+    # --- НАСТРОЙКИ RABBITMQ (Брокер очередей) ---
     rabbitmq_host: str = "localhost"
     rabbitmq_port: int = 5672
     rabbitmq_user: str = "guest"
     rabbitmq_password: str = "guest"
+    rabbitmq_virtual_host: str = "/"
+    rabbitmq_heartbeat: int = 600
+    rabbitmq_timeout: int = 300
+
+    # Дополнительные настройки RabbitMQ
+    rabbitmq_management_port: int = 15672
+    rabbitmq_connection_attempts: int = 3
+    rabbitmq_retry_delay: float | int = 2.0
+    rabbitmq_max_retries: int = 5
+    rabbitmq_prefetch_count: int = 10
+
+    # Настройки для очередей
+    rabbitmq_queue_ttl_ms: int = 86400000  # 24 часа
+    rabbitmq_retry_1_ttl_ms: int = 5000  # 5 секунд
+    rabbitmq_retry_2_ttl_ms: int = 30000  # 30 секунд
+    rabbitmq_retry_3_ttl_ms: int = 120000  # 2 минуты
+
+    # --- НАСТРОЙКИ ДЛЯ ВОРКЕРОВ ---
+    worker_max_retries: int = 3
+    worker_concurrency: int = 4
+    worker_prefetch_count: int = 1
+    worker_heartbeat_interval: int = 30
+
+    # --- НАСТРОЙКИ retry ----
+    retry_exceptions: type[Exception] | tuple[type[Exception], ...] = Exception
+    retry_max_attempts: int = 3
+    retry_delay: float | int = 1
+    retry_backoff: float | int = 2
+    retry_jitter: float | int = 0.1
+    retry_on_result: Callable[[Any], bool] | None = None
+    retry_max_delay: float | None = None
 
 
 class GatewayConfig(BaseConfig):
@@ -87,28 +118,31 @@ class DownloadWorkerConfig(BaseConfig):
 T = TypeVar("T", bound=BaseConfig)
 
 
-@lru_cache(maxsize=None)
-def _get_config(config_class: Type[T], service_name: str) -> T:
+def _load_config_uncached(config_class: Type[T], service_name: str) -> T:
     load_env_file(service_name)
     return config_class()
 
 
+@lru_cache(maxsize=None)
 def get_gateway_config() -> GatewayConfig:
-    return cast(GatewayConfig, _get_config(GatewayConfig, "gateway"))
+    return _load_config_uncached(GatewayConfig, "gateway")
 
 
+@lru_cache(maxsize=None)
 def get_llm_service_config() -> LLMServiceConfig:
-    # Явно подсказываем mypy, что Any на самом деле является LLMServiceConfig
-    return cast(LLMServiceConfig, _get_config(LLMServiceConfig, "llm-service"))
+    return _load_config_uncached(LLMServiceConfig, "llm-service")
 
 
+@lru_cache(maxsize=None)
 def get_process_worker_config() -> ProcessWorkerConfig:
-    return cast(ProcessWorkerConfig, _get_config(ProcessWorkerConfig, "processing-worker"))
+    return _load_config_uncached(ProcessWorkerConfig, "processing-worker")
 
 
+@lru_cache(maxsize=None)
 def get_search_service_config() -> SearchServiceConfig:
-    return cast(SearchServiceConfig, _get_config(SearchServiceConfig, "search-service"))
+    return _load_config_uncached(SearchServiceConfig, "search-service")
 
 
+@lru_cache(maxsize=None)
 def get_download_worker_config() -> DownloadWorkerConfig:
-    return cast(DownloadWorkerConfig, _get_config(DownloadWorkerConfig, "download-worker"))
+    return _load_config_uncached(DownloadWorkerConfig, "download-worker")
