@@ -295,6 +295,7 @@ BINDINGS: list[tuple[QueueNames, ExchangeNames, RoutingKeys]] = [
 # ВСПОМОГАТЕЛЬНЫЕ МАППИНГИ И ФУНКЦИИ
 # ============================================================
 
+# Маппинг типов задач на routing keys
 TASK_TYPE_ROUTING_MAP: dict[str, RoutingKeys] = {
     "download": RoutingKeys.DOWNLOAD,
     "vectorize": RoutingKeys.VECTORIZE,
@@ -304,6 +305,7 @@ TASK_TYPE_ROUTING_MAP: dict[str, RoutingKeys] = {
     "report": RoutingKeys.TASK_REPORT,
 }
 
+# Маппинг типов задач на очереди
 TASK_TYPE_QUEUE_MAP: dict[str, QueueNames] = {
     "download": QueueNames.TASK_PROCESS,
     "vectorize": QueueNames.TASK_PROCESS,
@@ -312,6 +314,7 @@ TASK_TYPE_QUEUE_MAP: dict[str, QueueNames] = {
     "report": QueueNames.TASK_REPORT,
 }
 
+# Маппинг routing keys на очереди
 ROUTING_KEY_QUEUE_MAP: dict[RoutingKeys, QueueNames] = {
     RoutingKeys.DOWNLOAD: QueueNames.TASK_PROCESS,
     RoutingKeys.VECTORIZE: QueueNames.TASK_PROCESS,
@@ -327,6 +330,7 @@ ROUTING_KEY_QUEUE_MAP: dict[RoutingKeys, QueueNames] = {
     RoutingKeys.LOG_INFO: QueueNames.LOG_INFO,
 }
 
+# Маппинг очередей на DLX
 QUEUE_DLX_MAP: dict[QueueNames, ExchangeNames] = {
     QueueNames.MAIN: ExchangeNames.DEAD_LETTER,
     QueueNames.PRIORITY: ExchangeNames.DEAD_LETTER,
@@ -342,6 +346,7 @@ QUEUE_DLX_MAP: dict[QueueNames, ExchangeNames] = {
     QueueNames.LOG_INFO: ExchangeNames.DLX_LOG,
 }
 
+# Маппинг для retry очередей
 RETRY_QUEUE_MAP: dict[int, QueueNames] = {
     1: QueueNames.RETRY_1,
     2: QueueNames.RETRY_2,
@@ -349,9 +354,9 @@ RETRY_QUEUE_MAP: dict[int, QueueNames] = {
 }
 
 RETRY_TTL_MAP: dict[int, int] = {
-    1: 5000,
-    2: 30000,
-    3: 120000,
+    1: 5000,  # 5 секунд
+    2: 30000,  # 30 секунд
+    3: 120000,  # 2 минуты
 }
 
 
