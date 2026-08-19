@@ -67,5 +67,5 @@ class Task(BaseModel):
         ..., description="Конкретные данные для выполнения работы"
     )
 
-    error: str | None = Field(None, description="Текст ошибки, если статус FAILED")
+    error: str | None = Field(default=None, description="Текст ошибки, если статус FAILED")
     trace_id: str = Field(..., description="Сквозной ID для логов всей микросервисной системы")

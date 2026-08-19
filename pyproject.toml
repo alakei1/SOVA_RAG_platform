@@ -18,6 +18,7 @@ dev = [
     "types-redis>=4.6.0",
     "types-python-dateutil>=2.9.0",
     "pre-commit>=4.0.0",
+    "types-pika>=1.2.0b1",
 ]
 
 [build-system]
@@ -119,7 +120,7 @@ plugins = [
 
 
 [[tool.mypy.overrides]]
-module = ["config", "settings"]
+module = ["config", "settings","pika"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
