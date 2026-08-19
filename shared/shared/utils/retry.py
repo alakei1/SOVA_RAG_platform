@@ -2,8 +2,9 @@ import asyncio
 import logging
 import random
 import time
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, TypeVar
+from typing import Any, TypeVar
 
 from shared import BaseConfig
 
@@ -25,7 +26,7 @@ def retry_on_exception(
     logger_func: Callable[[str], None] | None = None,
 ) -> Callable[[F], F]:
     """
-    Декоратор для повторных попыток при возникновении исключений.
+    Декоратор для повторных попыток при возникновении исключений[cite: 5].
     """
 
     def decorator(func: F) -> F:
@@ -98,7 +99,7 @@ def async_retry_on_exception(
     logger_func: Callable[[str], None] | None = None,
 ) -> Callable[[F], F]:
     """
-    Асинхронная версия декоратора для повторных попыток.
+    Асинхронная версия декоратора для повторных попыток[cite: 5].
     """
 
     def decorator(func: F) -> F:
@@ -158,7 +159,7 @@ def async_retry_on_exception(
 
 class RetryContext:
     """
-    Контекстный менеджер для контроля попыток в циклах.
+    Контекстный менеджер для контроля попыток в циклах[cite: 5].
     Поскольку __exit__ не умеет перезапускать блок `with` заново,
     правильный паттерн использования выглядит так:
 
@@ -177,7 +178,7 @@ class RetryContext:
         jitter: float | int = BaseConfig.retry_jitter,
         max_delay: float | None = BaseConfig.retry_max_delay,
         logger_func: Callable[[str], None] | None = None,
-    ):
+    ) -> None:
         self.exceptions = exceptions
         self.max_attempts = max_attempts
         self.delay = delay
@@ -198,19 +199,19 @@ class RetryContext:
 
     def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> bool:
         if exc_val is None:
-            self._active = False  # Успешно выполнено, выходим из цикла
+            self._active = False  # Успешно выполнено, выходим из цикла[cite: 5]
             return True
 
         if not isinstance(exc_val, self.exceptions):
             self._active = False
-            return False  # Не то исключение, пробрасываем наверх
+            return False  # Не то исключение, пробрасываем наверх[cite: 5]
 
         if self.attempt >= self.max_attempts:
             self._active = False
             default_logger.error(f"Context failed after {self.max_attempts} attempts: {exc_val}")
-            return False  # Лимит попыток исчерпан, выбрасываем ошибку
+            return False  # Лимит попыток исчерпан, выбрасываем ошибку[cite: 5]
 
-        # Расчет задержки
+        # Расчет задержки[cite: 5]
         sleep_time = self.current_delay + random.uniform(-self.jitter, self.jitter)
         sleep_time = max(0.0, sleep_time)
 
@@ -226,27 +227,27 @@ class RetryContext:
         self.current_delay = min(self.current_delay * self.backoff, self.max_delay or float("inf"))
         self.attempt += 1
 
-        return True  # Подавляем ошибку, чтобы цикл пошел на следующую итерацию
+        return True  # Подавляем ошибку, чтобы цикл пошел на следующую итерацию[cite: 5]
 
 
 # Вспомогательные функции для проверки результатов
 def is_result_none(result: Any) -> bool:
-    """Проверка результата на None"""
+    """Проверка результата на None[cite: 5]"""
     return result is None
 
 
 def is_result_empty(result: Any) -> bool:
-    """Проверка результата на пустоту"""
+    """Проверка результата на пустоту[cite: 5]"""
     return not result
 
 
 def is_result_false(result: bool) -> bool:
-    """Проверка результата на False"""
+    """Проверка результата на False[cite: 5]"""
     return result is False
 
 
 def is_result_error(result: Any) -> bool:
-    """Проверка результата на наличие ошибки"""
+    """Проверка результата на наличие ошибки[cite: 5]"""
     if isinstance(result, dict):
         return result.get("error") is not None
     return False

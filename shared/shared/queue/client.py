@@ -1,7 +1,8 @@
 import json
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from types import TracebackType
-from typing import Any, Callable, Dict, Iterator, Optional, Self, Type, cast
+from typing import Any, Self, cast
 
 import pika
 from loguru import logger
@@ -23,7 +24,7 @@ class RabbitMQClient:
         password: str = BaseConfig.rabbitmq_password,
         heartbeat: int = BaseConfig.rabbitmq_heartbeat,
         blocked_connection_timeout: int = BaseConfig.rabbitmq_timeout,
-    ):
+    ) -> None:
         self.host = host
         self.port = port
         self.virtual_host = virtual_host
@@ -32,8 +33,8 @@ class RabbitMQClient:
         self.heartbeat = heartbeat
         self.blocked_connection_timeout = blocked_connection_timeout
 
-        self._connection: Optional[pika.BlockingConnection] = None
-        self._channel: Optional[pika.adapters.blocking_connection.BlockingChannel] = None
+        self._connection: pika.BlockingConnection | None = None
+        self._channel: pika.adapters.blocking_connection.BlockingChannel | None = None
 
     def _get_connection_params(self) -> pika.ConnectionParameters:
         """Создание параметров подключения"""
@@ -103,8 +104,7 @@ class RabbitMQClient:
     def get_channel(self) -> Iterator[pika.adapters.blocking_connection.BlockingChannel]:
         """Контекстный менеджер для работы с каналом"""
         try:
-            channel = self.channel
-            yield channel
+            yield self.channel
         except Exception as e:
             logger.error(f"Error in channel context: {e}")
             raise
@@ -115,7 +115,7 @@ class RabbitMQClient:
         exchange_type: str = ExchangeTypes.DIRECT,
         durable: bool = True,
         auto_delete: bool = False,
-        arguments: Dict[str, Any] | None = None,
+        arguments: dict[str, Any] | None = None,
     ) -> None:
         """Объявление обменника"""
         with self.get_channel() as channel:
@@ -158,20 +158,17 @@ class RabbitMQClient:
         exchange_name: str,
         routing_key: str,
         message: Any,
-        properties: Optional[pika.BasicProperties] = None,
+        properties: pika.BasicProperties | None = None,
         mandatory: bool = False,
     ) -> None:
         """Публикация сообщения"""
         with self.get_channel() as channel:
-            # Сериализация сообщения
-            if not isinstance(message, (bytes, str)):
+            if not isinstance(message, bytes | str):
                 message = json.dumps(message, ensure_ascii=False)
 
-            # Преобразование в bytes если нужно
             if isinstance(message, str):
                 message = message.encode("utf-8")
 
-            # Публикация
             channel.basic_publish(
                 exchange=exchange_name,
                 routing_key=routing_key,
@@ -191,7 +188,7 @@ class RabbitMQClient:
         callback: Callable[..., Any],
         auto_ack: bool = False,
         prefetch_count: int = 1,
-        consumer_tag: Optional[str] = None,
+        consumer_tag: str | None = None,
     ) -> str:
         """Начало потребления сообщений"""
         with self.get_channel() as channel:
@@ -214,14 +211,14 @@ class RabbitMQClient:
                         ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
                     raise
 
-            consumer_tag = channel.basic_consume(
+            assigned_tag = channel.basic_consume(
                 queue=queue_name,
                 on_message_callback=wrapped_callback,
                 auto_ack=auto_ack,
                 consumer_tag=consumer_tag,
             )
-            logger.info(f"Started consuming from {queue_name} (tag: {consumer_tag})")
-            return consumer_tag
+            logger.info(f"Started consuming from {queue_name} (tag: {assigned_tag})")
+            return assigned_tag
 
     def ack_message(self, delivery_tag: int) -> None:
         """Подтверждение обработки сообщения"""
@@ -255,8 +252,8 @@ class RabbitMQClient:
 
     def __exit__(
         self,
-        exc_type: Optional[Type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
     ) -> None:
         self.disconnect()

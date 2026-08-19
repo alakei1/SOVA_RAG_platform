@@ -1,5 +1,4 @@
 import uuid
-from typing import Optional
 
 import pika
 from loguru import logger
@@ -20,7 +19,7 @@ from shared import (
 class TaskPublisher:
     """Публикатор задач в RabbitMQ"""
 
-    def __init__(self, rabbitmq_client: RabbitMQClient):
+    def __init__(self, rabbitmq_client: RabbitMQClient) -> None:
         self.client = rabbitmq_client
 
     def publish_download_task(
@@ -29,11 +28,11 @@ class TaskPublisher:
         project_id: str,
         original_filename: str,
         trace_id: str,
-        source_url: Optional[str] = None,
-        temporary_s3_key: Optional[str] = None,
-        task_id: Optional[str] = None,
+        source_url: str | None = None,
+        temporary_s3_key: str | None = None,
+        task_id: str | None = None,
     ) -> Task:
-        """Публикация задачи на скачивание"""
+        """Публикация задачи на скачивание[cite: 4]"""
         task_id = task_id or str(uuid.uuid4())
 
         payload = DownloadTaskPayload(
@@ -52,7 +51,7 @@ class TaskPublisher:
             trace_id=trace_id,
         )
         self._publish_task(task, RoutingKeys.DOWNLOAD.value)
-        logger.info(f"Published DOWNLOAD task {task_id} for user {user_id}")
+        logger.info(f"Published DOWNLOAD task {task_id} for user {user_id}[cite: 4]")
         return task
 
     def publish_vectorize_task(
@@ -64,9 +63,9 @@ class TaskPublisher:
         s3_key: str,
         file_type: str,
         trace_id: str,
-        task_id: Optional[str] = None,
+        task_id: str | None = None,
     ) -> Task:
-        """Публикация задачи на векторизацию"""
+        """Публикация задачи на векторизацию[cite: 4]"""
         task_id = task_id or str(uuid.uuid4())
 
         payload = VectorizeTaskPayload(
@@ -87,7 +86,7 @@ class TaskPublisher:
         )
 
         self._publish_task(task, RoutingKeys.VECTORIZE.value)
-        logger.info(f"Published VECTORIZE task {task_id} for document {document_id}")
+        logger.info(f"Published VECTORIZE task {task_id} for document {document_id}[cite: 4]")
         return task
 
     def publish_delete_task(
@@ -97,9 +96,9 @@ class TaskPublisher:
         s3_bucket: str,
         s3_key: str,
         trace_id: str,
-        task_id: Optional[str] = None,
+        task_id: str | None = None,
     ) -> Task:
-        """Публикация задачи на удаление"""
+        """Публикация задачи на удаление[cite: 4]"""
         task_id = task_id or str(uuid.uuid4())
 
         payload = DeleteTaskPayload(
@@ -115,11 +114,11 @@ class TaskPublisher:
         )
 
         self._publish_task(task, RoutingKeys.DELETE.value)
-        logger.info(f"Published DELETE task {task_id} for document {document_id}")
+        logger.info(f"Published DELETE task {task_id} for document {document_id}[cite: 4]")
         return task
 
     def _publish_task(self, task: Task, routing_key: str) -> None:
-        """Публикация задачи в RabbitMQ"""
+        """Публикация задачи в RabbitMQ[cite: 4]"""
         message = task.model_dump_json()
 
         properties = pika.BasicProperties(
