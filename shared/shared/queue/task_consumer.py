@@ -5,15 +5,10 @@ from typing import Callable, Dict, Optional
 import pika
 from loguru import logger
 
-from shared import (
-    ExchangeNames,
-    RabbitMQClient,
-    RoutingKeys,
-    Task,
-    TaskStatus,
-    TaskType,
-    get_routing_key_for_task_type,
-)
+from shared.models import Task, TaskStatus, TaskType
+
+from .client import RabbitMQClient
+from .queues import ExchangeNames, RoutingKeys, get_routing_key_for_task_type
 
 
 class TaskConsumer:

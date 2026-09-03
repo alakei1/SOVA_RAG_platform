@@ -15,13 +15,15 @@ F = TypeVar("F", bound=Callable[..., Any])
 
 
 def retry_on_exception(
-    exceptions: type[Exception] | tuple[type[Exception], ...] = BaseConfig.retry_exceptions,
-    max_attempts: int = BaseConfig.retry_max_attempts,
-    delay: float | int = BaseConfig.retry_delay,
-    backoff: float | int = BaseConfig.retry_jitter,
-    jitter: float | int = BaseConfig.retry_jitter,
-    retry_on_result: Callable[[Any], bool] | None = BaseConfig.retry_on_result,
-    max_delay: float | None = BaseConfig.retry_max_delay,
+    exceptions: type[Exception] | tuple[type[Exception], ...] = getattr(
+        BaseConfig, "retry_exceptions", Exception
+    ),
+    max_attempts: int = getattr(BaseConfig, "retry_max_attempts", 3),
+    delay: float | int = getattr(BaseConfig, "retry_delay", 1.0),
+    backoff: float | int = getattr(BaseConfig, "retry_backoff", 2.0),
+    jitter: float | int = getattr(BaseConfig, "retry_jitter", 0.1),
+    retry_on_result: Callable[[Any], bool] | None = getattr(BaseConfig, "retry_on_result", None),
+    max_delay: float | None = getattr(BaseConfig, "retry_max_delay", None),
     logger_func: Callable[[str], None] | None = None,
 ) -> Callable[[F], F]:
     """
@@ -88,13 +90,15 @@ def retry_on_exception(
 
 
 def async_retry_on_exception(
-    exceptions: type[Exception] | tuple[type[Exception], ...] = BaseConfig.retry_exceptions,
-    max_attempts: int = BaseConfig.retry_max_attempts,
-    delay: float | int = BaseConfig.retry_delay,
-    backoff: float | int = BaseConfig.retry_jitter,
-    jitter: float | int = BaseConfig.retry_jitter,
-    retry_on_result: Callable[[Any], bool] | None = BaseConfig.retry_on_result,
-    max_delay: float | None = BaseConfig.retry_max_delay,
+    exceptions: type[Exception] | tuple[type[Exception], ...] = getattr(
+        BaseConfig, "retry_exceptions", Exception
+    ),
+    max_attempts: int = getattr(BaseConfig, "retry_max_attempts", 3),
+    delay: float | int = getattr(BaseConfig, "retry_delay", 1.0),
+    backoff: float | int = getattr(BaseConfig, "retry_backoff", 2.0),
+    jitter: float | int = getattr(BaseConfig, "retry_jitter", 0.1),
+    retry_on_result: Callable[[Any], bool] | None = getattr(BaseConfig, "retry_on_result", None),
+    max_delay: float | None = getattr(BaseConfig, "retry_max_delay", None),
     logger_func: Callable[[str], None] | None = None,
 ) -> Callable[[F], F]:
     """
@@ -170,12 +174,14 @@ class RetryContext:
 
     def __init__(
         self,
-        exceptions: type[Exception] | tuple[type[Exception], ...] = BaseConfig.retry_exceptions,
-        max_attempts: int = BaseConfig.retry_max_attempts,
-        delay: float | int = BaseConfig.retry_delay,
-        backoff: float | int = BaseConfig.retry_jitter,
-        jitter: float | int = BaseConfig.retry_jitter,
-        max_delay: float | None = BaseConfig.retry_max_delay,
+        exceptions: type[Exception] | tuple[type[Exception], ...] = getattr(
+            BaseConfig, "retry_exceptions", Exception
+        ),
+        max_attempts: int = getattr(BaseConfig, "retry_max_attempts", 3),
+        delay: float | int = getattr(BaseConfig, "retry_delay", 1.0),
+        backoff: float | int = getattr(BaseConfig, "retry_backoff", 2.0),
+        jitter: float | int = getattr(BaseConfig, "retry_jitter", 0.1),
+        max_delay: float | None = getattr(BaseConfig, "retry_max_delay", None),
         logger_func: Callable[[str], None] | None = None,
     ):
         self.exceptions = exceptions
