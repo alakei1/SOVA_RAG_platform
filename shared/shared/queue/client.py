@@ -9,7 +9,10 @@ from loguru import logger
 from pika.exceptions import AMQPConnectionError, ChannelError
 from pika.exchange_type import ExchangeType
 
-from shared import BaseConfig, ExchangeTypes, retry_on_exception
+from shared.config.settings import BaseConfig
+from shared.utils.retry import retry_on_exception
+
+from .queues import ExchangeTypes
 
 
 class RabbitMQClient:
@@ -17,21 +20,37 @@ class RabbitMQClient:
 
     def __init__(
         self,
-        host: str = BaseConfig.rabbitmq_host,
-        port: int = BaseConfig.rabbitmq_port,
-        virtual_host: str = BaseConfig.rabbitmq_virtual_host,
-        username: str = BaseConfig.rabbitmq_user,
-        password: str = BaseConfig.rabbitmq_password,
-        heartbeat: int = BaseConfig.rabbitmq_heartbeat,
-        blocked_connection_timeout: int = BaseConfig.rabbitmq_timeout,
+        host: str | None = None,
+        port: int | None = None,
+        virtual_host: str | None = None,
+        username: str | None = None,
+        password: str | None = None,
+        heartbeat: int | None = None,
+        blocked_connection_timeout: int | None = None,
     ) -> None:
-        self.host = host
-        self.port = port
-        self.virtual_host = virtual_host
-        self.username = username
-        self.password = password
-        self.heartbeat = heartbeat
-        self.blocked_connection_timeout = blocked_connection_timeout
+
+        self.host = host if host is not None else getattr(BaseConfig, "rabbitmq_host", "localhost")
+        self.port = port if port is not None else getattr(BaseConfig, "rabbitmq_port", 5672)
+        self.virtual_host = (
+            virtual_host
+            if virtual_host is not None
+            else getattr(BaseConfig, "rabbitmq_virtual_host", "/")
+        )
+        self.username = (
+            username if username is not None else getattr(BaseConfig, "rabbitmq_user", "guest")
+        )
+        self.password = (
+            password if password is not None else getattr(BaseConfig, "rabbitmq_password", "guest")
+        )
+        self.heartbeat = (
+            heartbeat if heartbeat is not None else getattr(BaseConfig, "rabbitmq_heartbeat", 600)
+        )
+
+        self.blocked_connection_timeout = (
+            blocked_connection_timeout
+            if blocked_connection_timeout is not None
+            else getattr(BaseConfig, "rabbitmq_timeout", 300)
+        )
 
         self._connection: pika.BlockingConnection | None = None
         self._channel: pika.adapters.blocking_connection.BlockingChannel | None = None

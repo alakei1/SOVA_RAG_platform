@@ -92,9 +92,7 @@ class QueueConfig(TypedDict):
     arguments: NotRequired[QueueArguments]
 
 
-# ============================================================
 # КОНФИГУРАЦИЯ ОЧЕРЕДЕЙ
-# ============================================================
 QUEUE_CONFIGS: dict[QueueNames, QueueConfig] = {
     QueueNames.MAIN: {
         "durable": True,

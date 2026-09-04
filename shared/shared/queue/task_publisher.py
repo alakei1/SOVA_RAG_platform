@@ -4,17 +4,17 @@ from typing import Optional
 import pika
 from loguru import logger
 
-from shared import (
+from shared.models import (
     DeleteTaskPayload,
     DownloadTaskPayload,
-    ExchangeNames,
-    RabbitMQClient,
-    RoutingKeys,
     Task,
     TaskStatus,
     TaskType,
     VectorizeTaskPayload,
 )
+
+from .client import RabbitMQClient
+from .queues import ExchangeNames, RoutingKeys
 
 
 class TaskPublisher:

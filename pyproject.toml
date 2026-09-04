@@ -126,3 +126,6 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = "pydantic.*"
 ignore_errors = false
+
+[tool.uv.extra-build-dependencies]
+grpcio-tools = ["setuptools"]
